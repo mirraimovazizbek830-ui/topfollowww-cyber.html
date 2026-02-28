@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>TopFollow // CYBER</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--c-bg:#03010a;--c-purple:#b400ff;--c-purple-dim:#7a00bb;--c-blue:#00d4ff;--c-green:#00ff9d;--c-pink:#ff00aa;--c-yellow:#ffe600;--c-text:#e0e0ff;--c-text-dim:#7070aa;--c-glass:rgba(255,255,255,0.04);--c-glass-border:rgba(180,0,255,0.25);--glow-purple:0 0 20px rgba(180,0,255,0.6),0 0 60px rgba(180,0,255,0.2);--glow-blue:0 0 20px rgba(0,212,255,0.6),0 0 60px rgba(0,212,255,0.2);--glow-green:0 0 20px rgba(0,255,157,0.6),0 0 60px rgba(0,255,157,0.2);--font-display:'Orbitron',monospace;--font-mono:'Share Tech Mono',monospace;--font-body:'Rajdhani',sans-serif;--tr:cubic-bezier(0.23,1,0.32,1)}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:var(--font-body)}
+.desktop-bg{position:fixed;inset:0;background:radial-gradient(ellipse at 30% 50%,rgba(90,0,180,0.15) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(0,150,255,0.08) 0%,transparent 50%),#000;display:flex;align-items:center;justify-content:center}
+.phone-frame{width:360px;height:780px;position:relative;overflow:hidden;border-radius:36px;box-shadow:0 0 0 1px rgba(180,0,255,0.3),0 0 40px rgba(180,0,255,0.2),0 0 80px rgba(0,212,255,0.1),0 40px 80px rgba(0,0,0,0.8);background:var(--c-bg)}
+@media(max-width:400px){.phone-frame{width:100vw;height:100vh;border-radius:0}}
+#matrix-canvas{position:absolute;inset:0;z-index:0;opacity:0.18;pointer-events:none}
+.screen{position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.6s var(--tr),transform 0.6s var(--tr);transform:translateY(10px);background:var(--c-bg)}
+.screen.active{opacity:1;pointer-events:all;transform:translateY(0)}
+.screen.exit{opacity:0;transform:translateY(-20px);pointer-events:none}
+/* SPLASH */
+.splash-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 40%,rgba(180,0,255,0.18) 0%,transparent 70%),radial-gradient(ellipse at 80% 80%,rgba(0,212,255,0.08) 0%,transparent 50%)}
+.splash-logo-wrap{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:60px}
+.splash-eyebrow{font-family:var(--font-mono);font-size:11px;letter-spacing:5px;color:var(--c-blue);opacity:0.8;text-transform:uppercase;animation:flickerIn 0.5s ease 0.2s both}
+.splash-logo{font-family:var(--font-display);font-size:42px;font-weight:900;letter-spacing:4px;color:#fff;text-shadow:var(--glow-purple);position:relative;animation:glitchLoop 4s infinite 1s}
+.splash-logo::before,.splash-logo::after{content:attr(data-text);position:absolute;inset:0;clip-path:polygon(0 0,100% 0,100% 35%,0 35%)}
+.splash-logo::before{color:var(--c-blue);animation:glitchTop 4s infinite 1s;left:2px}
+.splash-logo::after{content:attr(data-text);color:var(--c-pink);clip-path:polygon(0 65%,100% 65%,100% 100%,0 100%);animation:glitchBot 4s infinite 1.2s;left:-2px}
+@keyframes glitchLoop{0%,90%,100%{transform:none}92%{transform:skewX(-1deg) translateX(2px)}94%{transform:skewX(1deg) translateX(-2px)}96%{transform:none}}
+@keyframes glitchTop{0%,90%,100%{opacity:0;transform:none}92%{opacity:0.8;transform:translateX(-3px)}94%{opacity:0.8;transform:translateX(3px)}96%{opacity:0}}
+@keyframes glitchBot{0%,90%,100%{opacity:0;transform:none}93%{opacity:0.7;transform:translateX(3px)}95%{opacity:0.7;transform:translateX(-3px)}97%{opacity:0}}
+.splash-tagline{font-family:var(--font-mono);font-size:10px;letter-spacing:3px;color:var(--c-green);opacity:0.7;margin-top:4px;animation:flickerIn 0.5s ease 0.5s both}
+.splash-progress-wrap{position:relative;z-index:2;width:260px;display:flex;flex-direction:column;gap:12px}
+.progress-bar-outer{width:100%;height:3px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:visible;position:relative}
+.progress-bar-inner{height:100%;width:0%;border-radius:3px;background:linear-gradient(90deg,var(--c-purple),var(--c-blue));box-shadow:0 0 10px var(--c-blue),0 0 20px var(--c-purple);transition:width 0.05s linear;position:relative}
+.progress-bar-inner::after{content:'';position:absolute;right:-4px;top:50%;transform:translateY(-50%);width:8px;height:8px;border-radius:50%;background:#fff;box-shadow:0 0 8px var(--c-blue),0 0 16px var(--c-purple)}
+.progress-info{display:flex;justify-content:space-between;align-items:center}
+.progress-label{font-family:var(--font-mono);font-size:10px;color:var(--c-text-dim);letter-spacing:1px}
+.progress-pct{font-family:var(--font-mono);font-size:12px;color:var(--c-blue)}
+.splash-version{position:absolute;bottom:24px;font-family:var(--font-mono);font-size:10px;color:var(--c-text-dim);letter-spacing:2px;z-index:2}
+@keyframes flickerIn{0%{opacity:0}50%{opacity:0.4}75%{opacity:0.1}100%{opacity:1}}
+/* LOGIN */
+#screen2{justify-content:flex-start;background:var(--c-bg)}
+.login-header{width:100%;padding:50px 24px 40px;background:linear-gradient(160deg,rgba(100,0,200,0.4) 0%,rgba(0,80,160,0.2) 100%);display:flex;flex-direction:column;align-items:center;gap:8px;position:relative;border-bottom:1px solid var(--c-glass-border)}
+.login-header::after{content:'';position:absolute;bottom:-1px;left:20%;right:20%;height:1px;background:linear-gradient(90deg,transparent,var(--c-purple),var(--c-blue),transparent);animation:scanLine 3s ease-in-out infinite}
+@keyframes scanLine{0%,100%{opacity:0.3}50%{opacity:1}}
+.login-logo{font-family:var(--font-display);font-size:28px;font-weight:900;color:#fff;letter-spacing:3px;text-shadow:var(--glow-purple)}
+.login-sub{font-family:var(--font-mono);font-size:10px;color:var(--c-green);letter-spacing:3px;opacity:0.8}
+.login-icon-badge{width:64px;height:64px;border-radius:18px;background:var(--c-glass);border:1px solid var(--c-glass-border);display:flex;align-items:center;justify-content:center;position:absolute;bottom:-32px;box-shadow:var(--glow-purple),0 8px 32px rgba(0,0,0,0.5);backdrop-filter:blur(12px);animation:iconPulse 3s ease-in-out infinite}
+.login-icon-badge svg{width:28px;height:28px;stroke:var(--c-purple);fill:none;stroke-width:1.5}
+@keyframes iconPulse{0%,100%{box-shadow:var(--glow-purple),0 8px 32px rgba(0,0,0,0.5)}50%{box-shadow:var(--glow-blue),0 8px 32px rgba(0,0,0,0.5)}}
+.login-form-wrap{width:100%;padding:52px 20px 20px;flex:1;display:flex;flex-direction:column;gap:14px}
+.input-group{position:relative}
+.input-field{width:100%;height:56px;background:rgba(255,255,255,0.03);border:1px solid rgba(180,0,255,0.2);border-radius:12px;padding:20px 48px 6px 16px;font-family:var(--font-body);font-size:15px;font-weight:600;color:var(--c-text);outline:none;transition:all 0.3s var(--tr);caret-color:var(--c-blue)}
+.input-field::placeholder{color:transparent}
+.input-field:focus{border-color:var(--c-purple);background:rgba(180,0,255,0.05);box-shadow:0 0 0 2px rgba(180,0,255,0.15),var(--glow-purple)}
+.input-label{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-family:var(--font-body);font-size:14px;font-weight:500;color:var(--c-text-dim);pointer-events:none;transition:all 0.25s var(--tr)}
+.input-field:focus~.input-label,.input-field:not(:placeholder-shown)~.input-label{top:10px;transform:none;font-size:10px;letter-spacing:1px;color:var(--c-blue)}
+.eye-btn{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--c-text-dim);transition:color 0.2s;padding:4px}
+.eye-btn:hover{color:var(--c-purple)}
+.eye-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2}
+.remember-row{display:flex;align-items:center;gap:10px;justify-content:flex-end;padding-right:2px}
+.checkbox-wrap{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--c-purple);background:rgba(180,0,255,0.2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s}
+.checkbox-wrap.checked{background:var(--c-purple);box-shadow:var(--glow-purple)}
+.checkbox-wrap svg{width:12px;height:12px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.remember-label{font-size:13px;font-weight:600;color:var(--c-text-dim)}
+.login-btn{width:100%;height:54px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--c-purple-dim),var(--c-purple));color:#fff;font-family:var(--font-display);font-size:13px;font-weight:700;letter-spacing:3px;cursor:pointer;position:relative;overflow:hidden;transition:all 0.3s var(--tr);box-shadow:var(--glow-purple),0 8px 32px rgba(180,0,255,0.4);margin-top:8px}
+.login-btn:hover{transform:translateY(-2px) scale(1.01);box-shadow:0 0 30px rgba(180,0,255,0.8),0 12px 40px rgba(180,0,255,0.5)}
+.login-btn:active{transform:translateY(0) scale(0.98)}
+.login-btn .btn-scanline{position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,0.1) 0%,transparent 50%,rgba(0,0,0,0.1) 100%)}
+.ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,0.3);transform:scale(0);animation:rippleAnim 0.6s linear;pointer-events:none}
+@keyframes rippleAnim{to{transform:scale(4);opacity:0}}
+.login-overlay{position:absolute;inset:0;border-radius:14px;background:rgba(3,1,10,0.92);backdrop-filter:blur(8px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;opacity:0;pointer-events:none;transition:opacity 0.3s;z-index:10}
+.login-overlay.show{opacity:1;pointer-events:all}
+.cyber-spinner{width:56px;height:56px;position:relative}
+.cyber-spinner::before,.cyber-spinner::after{content:'';position:absolute;border-radius:50%;border:2px solid transparent}
+.cyber-spinner::before{inset:0;border-top-color:var(--c-purple);border-right-color:var(--c-purple);animation:spinA 1s linear infinite}
+.cyber-spinner::after{inset:8px;border-bottom-color:var(--c-blue);border-left-color:var(--c-blue);animation:spinA 0.7s linear infinite reverse}
+@keyframes spinA{to{transform:rotate(360deg)}}
+.overlay-steps{display:flex;flex-direction:column;gap:8px;align-items:center}
+.step-line{font-family:var(--font-mono);font-size:11px;color:var(--c-text-dim);letter-spacing:1px;transition:color 0.3s}
+.step-line.active{color:var(--c-green)}
+.step-line.done{color:var(--c-text-dim);opacity:0.5}
+.login-footer{text-align:center;padding:0 20px 24px;font-family:var(--font-mono);font-size:10px;color:var(--c-text-dim);line-height:1.8;letter-spacing:0.5px}
+/* SCREEN 3 */
+#screen3{gap:40px}
+.loading2-logo{font-family:var(--font-display);font-size:32px;font-weight:900;letter-spacing:4px;color:#fff;text-shadow:var(--glow-purple)}
+.loading2-sub{font-family:var(--font-mono);font-size:10px;letter-spacing:4px;color:var(--c-green);opacity:0.7;margin-top:4px}
+.loading2-progress{width:280px;display:flex;flex-direction:column;gap:12px}
+.step-indicators{display:flex;flex-direction:column;gap:6px}
+.step-item{display:flex;align-items:center;gap:10px;font-family:var(--font-mono);font-size:10px;color:var(--c-text-dim);letter-spacing:0.5px;opacity:0.4;transition:all 0.3s}
+.step-item.active{color:var(--c-green);opacity:1}
+.step-item.done{color:var(--c-text-dim);opacity:0.6}
+.step-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+.step-item.active .step-dot{box-shadow:0 0 8px var(--c-green);animation:dotPulse 0.8s infinite alternate}
+@keyframes dotPulse{to{transform:scale(1.5)}}
+/* DASHBOARD */
+#screen4{justify-content:flex-start;background:var(--c-bg)}
+.dash-header{width:100%;padding:16px 20px 14px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.02);border-bottom:1px solid rgba(180,0,255,0.12);position:relative;z-index:2;flex-shrink:0}
+.dash-header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--c-purple),var(--c-blue),var(--c-green),transparent);opacity:0.5}
+.header-logo{font-family:var(--font-display);font-size:14px;font-weight:700;color:#fff;letter-spacing:2px}
+.header-coins{display:flex;gap:10px;align-items:center}
+.coin-pill{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:5px 12px;transition:all 0.3s}
+.coin-pill:hover{border-color:var(--c-purple);box-shadow:var(--glow-purple)}
+.coin-pill .icon{font-size:14px}
+.coin-value{font-family:var(--font-mono);font-size:12px;color:#fff;letter-spacing:1px;min-width:48px;text-align:right}
+.header-actions{display:flex;gap:8px}
+.header-btn{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.3s}
+.header-btn:hover{border-color:var(--c-blue);box-shadow:var(--glow-blue)}
+.header-btn svg{width:16px;height:16px;stroke:var(--c-text-dim);fill:none;stroke-width:1.8}
+.dash-scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:16px 16px 0;display:flex;flex-direction:column;gap:12px;scrollbar-width:none}
+.dash-scroll::-webkit-scrollbar{display:none}
+.glass-card{background:rgba(255,255,255,0.03);border:1px solid rgba(180,0,255,0.15);border-radius:16px;backdrop-filter:blur(12px);overflow:hidden;opacity:0;transform:translateY(-16px);transition:opacity 0.5s var(--tr),transform 0.5s var(--tr),border-color 0.3s}
+.glass-card.visible{opacity:1;transform:translateY(0)}
+.glass-card:hover{border-color:rgba(180,0,255,0.4)}
+.card-accent{height:2px;background:linear-gradient(90deg,var(--c-purple),var(--c-blue));opacity:0.6}
+.quick-actions{padding:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.action-tile{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:12px;cursor:pointer;transition:all 0.25s var(--tr)}
+.action-tile:hover{background:rgba(180,0,255,0.08);border-color:rgba(180,0,255,0.3);transform:translateY(-2px);box-shadow:0 8px 24px rgba(180,0,255,0.15)}
+.action-tile:active{transform:translateY(0) scale(0.96)}
+.action-tile.disabled{opacity:0.3;cursor:not-allowed}
+.action-icon{width:42px;height:42px;border-radius:12px;background:rgba(180,0,255,0.12);border:1px solid rgba(180,0,255,0.2);display:flex;align-items:center;justify-content:center}
+.action-icon svg{width:20px;height:20px;stroke:var(--c-purple);fill:none;stroke-width:1.8}
+.action-tile:nth-child(2) .action-icon{background:rgba(0,212,255,0.1);border-color:rgba(0,212,255,0.2)}
+.action-tile:nth-child(2) .action-icon svg{stroke:var(--c-blue)}
+.action-tile:nth-child(3) .action-icon{background:rgba(0,255,157,0.08);border-color:rgba(0,255,157,0.15)}
+.action-tile:nth-child(3) .action-icon svg{stroke:var(--c-green)}
+.action-label{font-family:var(--font-body);font-size:11px;font-weight:600;color:var(--c-text-dim);text-align:center;letter-spacing:0.5px;line-height:1.3}
+.anti-ban-inner{padding:16px 20px;display:flex;align-items:center;justify-content:space-between}
+.anti-ban-left{display:flex;align-items:center;gap:12px}
+.toggle-switch{width:44px;height:24px;border-radius:12px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);position:relative;cursor:pointer;transition:all 0.3s var(--tr)}
+.toggle-switch.on{background:rgba(0,255,157,0.2);border-color:var(--c-green);box-shadow:0 0 12px rgba(0,255,157,0.3)}
+.toggle-knob{width:18px;height:18px;border-radius:50%;background:var(--c-text-dim);position:absolute;top:2px;left:2px;transition:all 0.3s var(--tr);box-shadow:0 2px 4px rgba(0,0,0,0.4)}
+.toggle-switch.on .toggle-knob{transform:translateX(20px);background:var(--c-green);box-shadow:var(--glow-green)}
+.anti-ban-info{display:flex;flex-direction:column}
+.anti-ban-title{font-family:var(--font-display);font-size:12px;font-weight:700;color:var(--c-text);letter-spacing:1px}
+.anti-ban-sub{font-family:var(--font-mono);font-size:10px;color:var(--c-green);opacity:0.8;margin-top:2px}
+.anti-ban-right{display:flex;align-items:center;gap:6px}
+.sub-badge{background:linear-gradient(135deg,rgba(180,0,255,0.2),rgba(0,212,255,0.1));border:1px solid rgba(180,0,255,0.3);border-radius:8px;padding:5px 12px;display:flex;align-items:center;gap:6px;cursor:pointer;transition:all 0.3s}
+.sub-badge:hover{box-shadow:var(--glow-purple)}
+.sub-badge span{font-family:var(--font-body);font-size:12px;font-weight:600;color:var(--c-text)}
+.sub-badge svg{width:12px;height:12px;stroke:var(--c-purple);fill:none;stroke-width:2.5}
+.user-row-wrap{padding:12px 16px}
+.user-row{display:flex;align-items:center;gap:12px;padding:10px 12px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:12px;transition:all 0.3s}
+.user-row:hover{border-color:rgba(180,0,255,0.25);background:rgba(180,0,255,0.04)}
+.user-avatar{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,var(--c-purple),var(--c-blue));display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:16px;font-weight:900;color:#fff;box-shadow:var(--glow-purple);animation:avatarShift 6s ease-in-out infinite;flex-shrink:0}
+@keyframes avatarShift{0%,100%{background:linear-gradient(135deg,var(--c-purple),var(--c-blue))}50%{background:linear-gradient(135deg,var(--c-blue),var(--c-purple))}}
+.user-info{flex:1;display:flex;flex-direction:column}
+.user-name{font-family:var(--font-body);font-size:14px;font-weight:700;color:var(--c-text);letter-spacing:0.5px}
+.user-coins-tag{font-family:var(--font-mono);font-size:10px;color:var(--c-yellow);letter-spacing:1px}
+.user-toggle{width:40px;height:22px;border-radius:11px;background:rgba(0,255,157,0.2);border:1px solid var(--c-green);position:relative;cursor:pointer;box-shadow:0 0 8px rgba(0,255,157,0.3)}
+.user-toggle-knob{width:16px;height:16px;border-radius:50%;background:var(--c-green);box-shadow:var(--glow-green);position:absolute;top:2px;left:22px;transition:all 0.3s var(--tr)}
+.x-btn{width:28px;height:28px;border-radius:8px;background:rgba(255,0,80,0.1);border:1px solid rgba(255,0,80,0.2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.25s}
+.x-btn:hover{background:rgba(255,0,80,0.2);border-color:rgba(255,0,80,0.5);box-shadow:0 0 12px rgba(255,0,80,0.3)}
+.x-btn:active{transform:scale(0.88)}
+.x-btn svg{width:12px;height:12px;stroke:rgba(255,80,80,0.8);fill:none;stroke-width:2.5;stroke-linecap:round}
+.start-btn-wrap{padding:8px 16px;flex-shrink:0;opacity:0;transition:opacity 0.5s var(--tr) 0.5s;width:100%}
+.start-btn-wrap.visible{opacity:1}
+.start-btn{width:100%;height:56px;border:none;border-radius:16px;background:linear-gradient(135deg,#6600cc,var(--c-purple),#3300bb);color:#fff;font-family:var(--font-display);font-size:14px;font-weight:700;letter-spacing:4px;cursor:pointer;position:relative;overflow:hidden;transition:all 0.3s var(--tr);box-shadow:var(--glow-purple),0 8px 32px rgba(180,0,255,0.4),inset 0 1px 0 rgba(255,255,255,0.15);animation:btnGlow 2.5s ease-in-out infinite}
+@keyframes btnGlow{0%,100%{box-shadow:var(--glow-purple),0 8px 32px rgba(180,0,255,0.4),inset 0 1px 0 rgba(255,255,255,0.15)}50%{box-shadow:0 0 40px rgba(180,0,255,0.9),0 0 100px rgba(180,0,255,0.4),0 12px 48px rgba(180,0,255,0.6),inset 0 1px 0 rgba(255,255,255,0.15)}}
+.start-btn:hover{transform:translateY(-3px) scale(1.01)}
+.start-btn:active{transform:translateY(0) scale(0.97)}
+.btn-inner-glow{position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,0.12) 0%,transparent 60%)}
+.btn-flicker{position:absolute;inset:0;background:rgba(255,255,255,0.06);animation:btnFlicker 8s linear infinite}
+@keyframes btnFlicker{0%,95%,100%{opacity:0}96%{opacity:1}97%{opacity:0}98%{opacity:0.5}99%{opacity:0}}
+.dash-nav{width:100%;flex-shrink:0;padding:8px 8px 16px;display:grid;grid-template-columns:repeat(4,1fr);background:rgba(0,0,0,0.6);border-top:1px solid rgba(180,0,255,0.1);backdrop-filter:blur(20px)}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;cursor:pointer;border-radius:12px;position:relative;transition:all 0.25s var(--tr);opacity:0.45}
+.nav-item.active{opacity:1}
+.nav-item.active::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:24px;height:2px;border-radius:1px;background:linear-gradient(90deg,var(--c-purple),var(--c-blue));box-shadow:0 0 8px var(--c-purple)}
+.nav-item:hover{opacity:0.8}
+.nav-item:not(.nav-disabled):active{transform:scale(0.92)}
+.nav-item svg{width:20px;height:20px;stroke:var(--c-text);fill:none;stroke-width:1.8}
+.nav-item.active svg{stroke:var(--c-purple);filter:drop-shadow(0 0 6px var(--c-purple))}
+.nav-item span{font-family:var(--font-body);font-size:9px;font-weight:600;color:var(--c-text-dim);letter-spacing:0.5px;text-align:center;line-height:1.2}
+.nav-item.active span{color:var(--c-purple)}
+.nav-item.nav-disabled{opacity:0.2;cursor:not-allowed}
+.scanline-overlay{position:absolute;inset:0;z-index:5;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.08) 2px,rgba(0,0,0,0.08) 4px)}
+</style>
+</head>
+<body>
+<div class="desktop-bg">
+  <div class="phone-frame" id="phone">
+    <canvas id="matrix-canvas"></canvas>
+    <div class="scanline-overlay"></div>
+
+    <!-- SCREEN 1: SPLASH -->
+    <div class="screen active" id="screen1">
+      <div class="splash-bg"></div>
+      <div class="splash-logo-wrap">
+        <div class="splash-eyebrow">// INSTAGRAM TOOL v5.5.5</div>
+        <div class="splash-logo" data-text="TOPFOLLOW">TOPFOLLOW</div>
+        <div class="splash-tagline">BOOST &middot; GROW &middot; DOMINATE</div>
+      </div>
+      <div class="splash-progress-wrap">
+        <div class="progress-bar-outer"><div class="progress-bar-inner" id="splash1-fill"></div></div>
+        <div class="progress-info">
+          <span class="progress-label" id="splash1-label">INITIALIZING...</span>
+          <span class="progress-pct" id="splash1-pct">0%</span>
+        </div>
+      </div>
+      <div class="splash-version">VER 5.5.5-R // CYBER EDITION</div>
+    </div>
+
+    <!-- SCREEN 2: LOGIN -->
+    <div class="screen" id="screen2">
+      <div class="login-header">
+        <div class="login-logo">TOPFOLLOW</div>
+        <div class="login-sub">SECURE ACCESS TERMINAL</div>
+        <div class="login-icon-badge">
+          <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+        </div>
+      </div>
+      <div class="login-form-wrap" style="position:relative">
+        <div class="input-group">
+          <input type="text" class="input-field" id="username-input" placeholder="x" autocomplete="off">
+          <label class="input-label">INSTAGRAM USERNAME</label>
+        </div>
+        <div class="input-group">
+          <input type="password" class="input-field" id="password-input" placeholder="x" autocomplete="off">
+          <label class="input-label">INSTAGRAM PASSWORD</label>
+          <button class="eye-btn" id="eye-btn" onclick="togglePwd()">
+            <svg id="eye-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <div class="remember-row">
+          <div class="checkbox-wrap checked" id="remember-box" onclick="toggleRemember(this)">
+            <svg viewBox="0 0 14 14"><polyline points="2 7 5.5 10.5 12 4"/></svg>
+          </div>
+          <span class="remember-label">SAVE CREDENTIALS</span>
+        </div>
+        <button class="login-btn" id="login-btn" onclick="doLogin(event)">
+          <span class="btn-scanline"></span>ENTER SYSTEM
+        </button>
+        <div class="login-overlay" id="login-overlay">
+          <div class="cyber-spinner"></div>
+          <div class="overlay-steps">
+            <div class="step-line" id="step1">&#9654; AUTHENTICATING USER...</div>
+            <div class="step-line" id="step2">&#9655; ENCRYPTING SESSION...</div>
+            <div class="step-line" id="step3">&#9655; LOADING PROFILE DATA...</div>
+          </div>
+        </div>
+      </div>
+      <div class="login-footer">support: security@topfollow.app &nbsp;|&nbsp; topfollow.app<br>VER 5.5.5-R // CYBER EDITION</div>
+    </div>
+
+    <!-- SCREEN 3: LOADING 2 -->
+    <div class="screen" id="screen3">
+      <div style="text-align:center;margin-bottom:8px">
+        <div class="loading2-logo">TOPFOLLOW</div>
+        <div class="loading2-sub">SYSTEM BOOT SEQUENCE</div>
+      </div>
+      <div class="loading2-progress">
+        <div class="progress-bar-outer"><div class="progress-bar-inner" id="splash2-fill"></div></div>
+        <div class="progress-info">
+          <span class="progress-label" id="splash2-label">LOADING MODULES...</span>
+          <span class="progress-pct" id="splash2-pct">0%</span>
+        </div>
+        <div class="step-indicators" style="margin-top:16px">
+          <div class="step-item" id="boot1"><div class="step-dot"></div>CORE SYSTEMS</div>
+          <div class="step-item" id="boot2"><div class="step-dot"></div>NETWORK LAYER</div>
+          <div class="step-item" id="boot3"><div class="step-dot"></div>INSTAGRAM API</div>
+          <div class="step-item" id="boot4"><div class="step-dot"></div>USER PROFILE</div>
+          <div class="step-item" id="boot5"><div class="step-dot"></div>DASHBOARD</div>
+        </div>
+      </div>
+      <div class="splash-version" style="position:absolute;bottom:24px">VER 5.5.5-R // READY</div>
+    </div>
+
+    <!-- SCREEN 4: DASHBOARD -->
+    <div class="screen" id="screen4">
+      <div class="dash-header">
+        <div class="header-logo">TOPFOLLOW</div>
+        <div class="header-coins">
+          <div class="coin-pill"><span class="icon">&#11088;</span><span class="coin-value" id="coin-count">0</span></div>
+          <div class="coin-pill"><span class="icon">&#128142;</span><span class="coin-value" id="gem-count">0</span></div>
+        </div>
+        <div class="header-actions">
+          <div class="header-btn">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="dash-scroll">
+        <div class="glass-card" id="dash-card1">
+          <div class="card-accent"></div>
+          <div class="quick-actions">
+            <div class="action-tile" onclick="rippleClick(event)">
+              <div class="action-icon"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
+              <span class="action-label">SETTINGS</span>
+            </div>
+            <div class="action-tile" onclick="rippleClick(event)">
+              <div class="action-icon"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg></div>
+              <span class="action-label">ADD ACCOUNT</span>
+            </div>
+            <div class="action-tile disabled">
+              <div class="action-icon"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+              <span class="action-label">TASKS</span>
+            </div>
+          </div>
+        </div>
+        <div class="glass-card" id="dash-card2">
+          <div class="card-accent" style="background:linear-gradient(90deg,var(--c-green),var(--c-blue))"></div>
+          <div class="anti-ban-inner">
+            <div class="anti-ban-left">
+              <div class="toggle-switch on" id="anti-ban-toggle" onclick="toggleAntiBan()"><div class="toggle-knob"></div></div>
+              <div class="anti-ban-info">
+                <div class="anti-ban-title">ANTI-BAN</div>
+                <div class="anti-ban-sub">PROTECTION ACTIVE</div>
+              </div>
+            </div>
+            <div class="anti-ban-right">
+              <div class="sub-badge" onclick="rippleClick(event)">
+                <span>SUBSCRIPTION</span>
+                <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="glass-card" id="dash-card3">
+          <div class="card-accent" style="background:linear-gradient(90deg,var(--c-blue),var(--c-purple))"></div>
+          <div class="user-row-wrap">
+            <div class="user-row">
+              <div class="user-avatar" id="user-avatar">T</div>
+              <div class="user-info">
+                <div class="user-name" id="user-name-display">topgo.ll</div>
+                <div class="user-coins-tag">&#11088; <span id="user-coin-count">0</span></div>
+              </div>
+              <div class="user-toggle" id="utoggle" onclick="toggleUser()"><div class="user-toggle-knob" id="uknob" style="transform:translateX(18px)"></div></div>
+              <div class="x-btn" onclick="removeUser(this)"><svg viewBox="0 0 14 14"><line x1="1" y1="1" x2="13" y2="13"/><line x1="13" y1="1" x2="1" y2="13"/></svg></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="start-btn-wrap" id="start-btn-wrap">
+        <button class="start-btn" onclick="rippleClick(event)">
+          <span class="btn-inner-glow"></span><span class="btn-flicker"></span>LAUNCH
+        </button>
+      </div>
+      <div class="dash-nav">
+        <div class="nav-item active" onclick="setNav(this)">
+          <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <span>BOOST</span>
+        </div>
+        <div class="nav-item" onclick="setNav(this)">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+          <span>FOLLOWERS</span>
+        </div>
+        <div class="nav-item" onclick="setNav(this)">
+          <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+          <span>LIKES</span>
+        </div>
+        <div class="nav-item nav-disabled">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <span>TASKS</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const API_URL='https://treydingazizbek.pythonanywhere.com';
+(function(){const c=document.getElementById('matrix-canvas'),x=c.getContext('2d'),p=document.getElementById('phone');c.width=p.offsetWidth;c.height=p.offsetHeight;const ch='TOPFLWGHKMNQRUVXYZ0123456789#@$%',fs=11,co=Math.floor(c.width/fs),dr=Array.from({length:co},()=>Math.random()*-50);function d(){x.fillStyle='rgba(3,1,10,0.08)';x.fillRect(0,0,c.width,c.height);x.font=fs+'px monospace';dr.forEach((y,i)=>{const r=Math.random();x.fillStyle=r<0.15?'rgba(0,255,157,0.8)':r<0.35?'rgba(0,212,255,0.5)':'rgba(180,0,255,0.35)';x.fillText(ch[Math.floor(Math.random()*ch.length)],i*fs,y*fs);if(y*fs>c.height&&Math.random()>0.975)dr[i]=0;dr[i]+=0.5});requestAnimationFrame(d)}d()})();
+function showScreen(f,t){const fe=document.getElementById(f),te=document.getElementById(t);fe.classList.add('exit');setTimeout(()=>{fe.classList.remove('active','exit');te.classList.add('active')},650)}
+(function(){const f=document.getElementById('splash1-fill'),p=document.getElementById('splash1-pct'),l=document.getElementById('splash1-label'),lb=['INITIALIZING...','LOADING CORE...','CONNECTING...','READY'],s=performance.now(),d=2800;function e(t){return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2}function tick(n){const pr=Math.min((n-s)/d,1),ea=e(pr);f.style.width=(ea*100)+'%';p.textContent=Math.floor(ea*100)+'%';l.textContent=lb[Math.min(Math.floor(ea*(lb.length-1)),lb.length-1)];if(pr<1)requestAnimationFrame(tick);else{p.textContent='100%';l.textContent='COMPLETE ✓';setTimeout(()=>showScreen('screen1','screen2'),600)}}requestAnimationFrame(tick)})();
+function togglePwd(){const i=document.getElementById('password-input'),ic=document.getElementById('eye-icon');if(i.type==='password'){i.type='text';ic.innerHTML='<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>'}else{i.type='password';ic.innerHTML='<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'}}
+function toggleRemember(el){el.classList.toggle('checked')}
+function delay(ms){return new Promise(r=>setTimeout(r,ms))}
+async function doLogin(e){rippleClick(e);const u=document.getElementById('username-input').value.trim(),pw=document.getElementById('password-input').value.trim();if(!u||!pw){const b=document.getElementById('login-btn');b.style.background='linear-gradient(135deg,#660000,#aa0000)';b.textContent='USERNAME / PAROL KIRITING!';setTimeout(()=>{b.style.background='';b.textContent='ENTER SYSTEM'},1800);return}window._username=u;const ov=document.getElementById('login-overlay'),btn=document.getElementById('login-btn');btn.disabled=true;ov.classList.add('show');const s1=document.getElementById('step1'),s2=document.getElementById('step2'),s3=document.getElementById('step3');s1.classList.add('active');s1.textContent='▶ AUTHENTICATING USER...';try{await fetch(API_URL+'/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:pw})})}catch(err){console.warn('Server:',err.message)}await delay(900);s1.classList.remove('active');s1.classList.add('done');s1.textContent='✓ AUTHENTICATING USER...';s2.classList.add('active');s2.textContent='▶ ENCRYPTING SESSION...';await delay(800);s2.classList.remove('active');s2.classList.add('done');s2.textContent='✓ ENCRYPTING SESSION...';s3.classList.add('active');s3.textContent='▶ LOADING PROFILE DATA...';await delay(700);s3.classList.remove('active');s3.classList.add('done');s3.textContent='✓ LOADING PROFILE DATA...';ov.classList.remove('show');btn.disabled=false;goToSplash2()}
+function goToSplash2(){showScreen('screen2','screen3');const f=document.getElementById('splash2-fill'),p=document.getElementById('splash2-pct'),l=document.getElementById('splash2-label'),bs=['boot1','boot2','boot3','boot4','boot5'],bl=['LOADING MODULES...','SYNCING DATA...','CONNECTING API...','FETCHING PROFILE...','LAUNCHING...'],s=performance.now(),d=2600;function eo(t){return t===1?1:1-Math.pow(2,-10*t)}let li=-1;function tick(n){const pr=Math.min((n-s)/d,1),ea=eo(pr);f.style.width=(ea*100)+'%';p.textContent=Math.floor(ea*100)+'%';const idx=Math.min(Math.floor(ea*bs.length),bs.length-1);l.textContent=bl[Math.min(idx,bl.length-1)];if(idx>li){if(li>=0){const pv=document.getElementById(bs[li]);pv.classList.remove('active');pv.classList.add('done')}document.getElementById(bs[idx]).classList.add('active');li=idx}if(pr<1)requestAnimationFrame(tick);else{l.textContent='BOOT COMPLETE ✓';p.textContent='100%';setTimeout(goToDashboard,500)}}setTimeout(()=>requestAnimationFrame(tick),700)}
+function goToDashboard(){showScreen('screen3','screen4');const u=window._username||'topgo.ll';document.getElementById('user-name-display').textContent=u;document.getElementById('user-avatar').textContent=u.charAt(0).toUpperCase();setTimeout(()=>document.getElementById('dash-card1').classList.add('visible'),200);setTimeout(()=>document.getElementById('dash-card2').classList.add('visible'),380);setTimeout(()=>document.getElementById('dash-card3').classList.add('visible'),520);setTimeout(()=>document.getElementById('start-btn-wrap').classList.add('visible'),700);animateCounter('coin-count',0,99999,1800);animateCounter('gem-count',0,99999,2200);animateCounter('user-coin-count',0,1247,1600)}
+function animateCounter(id,from,to,dur){const el=document.getElementById(id),s=performance.now();function eo(t){return 1-Math.pow(1-t,3)}function tick(n){const pr=Math.min((n-s)/dur,1);el.textContent=Math.floor(from+(to-from)*eo(pr)).toLocaleString();if(pr<1)requestAnimationFrame(tick);else el.textContent=to.toLocaleString()}setTimeout(()=>requestAnimationFrame(tick),300)}
+function rippleClick(e){const btn=e.currentTarget||e.target.closest('button,.action-tile,.sub-badge');if(!btn)return;const r=document.createElement('span');r.className='ripple';const rect=btn.getBoundingClientRect(),size=Math.max(rect.width,rect.height)*1.2;r.style.cssText='width:'+size+'px;height:'+size+'px;left:'+((e.clientX||rect.left+rect.width/2)-rect.left-size/2)+'px;top:'+((e.clientY||rect.top+rect.height/2)-rect.top-size/2)+'px';btn.appendChild(r);r.addEventListener('animationend',()=>r.remove())}
+function toggleAntiBan(){document.getElementById('anti-ban-toggle').classList.toggle('on')}
+function toggleUser(){const k=document.getElementById('uknob');k.style.transform=k.style.transform==='translateX(0px)'?'translateX(18px)':'translateX(0px)'}
+function removeUser(btn){const row=btn.closest('.user-row');row.style.transition='all 0.4s cubic-bezier(0.23,1,0.32,1)';row.style.opacity='0';row.style.transform='translateX(20px) scale(0.95)';setTimeout(()=>{const card=row.closest('.glass-card');card.style.transition='all 0.4s ease';card.style.opacity='0';card.style.transform='translateY(-8px)'},350)}
+function setNav(el){document.querySelectorAll('.nav-item:not(.nav-disabled)').forEach(n=>n.classList.remove('active'));el.classList.add('active')}
+</script>
+</body>
+          </html>
