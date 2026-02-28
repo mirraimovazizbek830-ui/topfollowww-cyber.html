@@ -1,0 +1,14 @@
+{
+  "builds": [
+    {
+      "src": "topfollow-cyber.html",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/topfollow-cyber.html"
+    }
+  ]
+}
