@@ -1,14 +1,14 @@
 {
   "builds": [
     {
-      "src": "topfollow-cyber.html",
+      "src": "topfollowww-cyber.html",
       "use": "@vercel/static"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "/topfollow-cyber.html"
+      "dest": "/topfollowww-cyber.html"
     }
   ]
 }
